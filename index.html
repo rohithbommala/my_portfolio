@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bommala Rohith | Professional Time Table</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <!-- AOS Library for scroll animations -->
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #f0f6f0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #2a7a2a;
+      color: #fff;
+      padding: 20px 0;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+    nav a:hover {
+      color: #a8d5a2;
+    }
+    /* Section Block Styles */
+    .block {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin: 30px auto;
+      padding: 30px;
+      max-width: 900px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s forwards;
+    }
+    /* FadeInUp Keyframes */
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .hidden {
+      display: none !important;
+    }
+    .section-title {
+      font-size: 1.9rem;
+      color: #2a7a2a;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #2a7a2a;
+      padding-bottom: 10px;
+    }
+    /* Toggle Button for Forms */
+    .toggle-btn {
+      cursor: pointer;
+      font-size: 1.75rem;
+      font-weight: 600;
+      user-select: none;
+    }
+    /* Enhanced Time Table Styles */
+    .timetable-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+      overflow: hidden;
+    }
+    .calendar-header {
+      background: #2a7a2a;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .calendar-toolbar {
+      display: flex;
+      gap: 10px;
+    }
+    .calendar-toolbar button {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      padding: 5px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .calendar-toolbar button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    #calendar {
+      padding: 20px;
+    }
+    /* Custom FullCalendar Styling */
+    .fc-event {
+      border-radius: 6px;
+      border: none;
+      padding: 3px 6px;
+      font-size: 0.9em;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .fc-event-title {
+      font-weight: 600;
+    }
+    .fc-timegrid-slot {
+      height: 2.5em !important;
+    }
+    .fc-day-today {
+      background-color: rgba(42, 122, 42, 0.05) !important;
+    }
+    .fc-col-header-cell {
+      background: #f8f9fa;
+      padding: 8px 0;
+    }
+    /* Event category colors */
+    .event-lecture {
+      background: #4e73df;
+      border-color: #4e73df;
+    }
+    .event-lab {
+      background: #1cc88a;
+      border-color: #1cc88a;
+    }
+    .event-meeting {
+      background: #f6c23e;
+      border-color: #f6c23e;
+    }
+    .event-personal {
+      background: #e74a3b;
+      border-color: #e74a3b;
+    }
+    .event-study {
+      background: #36b9cc;
+      border-color: #36b9cc;
+    }
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .calendar-toolbar {
+        flex-direction: column;
+        gap: 5px;
+      }
+      .fc-toolbar-title {
+        font-size: 1.2em !important;
+      }
+    }
+    /* Add Event Modal */
+    .event-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1050;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s;
+    }
+    .event-modal.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      padding: 25px;
+    }
+    /* Calendar Embed Styling */
+    .calendar-embed {
+      border: 0;
+      width: 100%;
+      height: 600px;
+    }
+    /* Extra spacing utility */
+    .mb-20 {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header & Navigation -->
+  <header>
+    <h1>Bommala Rohith</h1>
+    <p>Portfolio | ML, AI & Deep Learning Enthusiast</p>
+    <nav>
+      <a data-target="about">About Me</a>
+      <a data-target="internships">Internships</a>
+      <a data-target="projects">Projects</a>
+      <a data-target="timetable">Time Table</a>
+      <a data-target="achievements">Achievements</a>
+      <a data-target="extracurricular">Extracurricular</a>
+      <a data-target="skills">Skills</a>
+      <a data-target="vocabulary">Vocabulary</a>
+      <a data-target="contact">Contact</a>
+    </nav>
+  </header>
+
+  <!-- About Me Block (default visible) -->
+  <div class="container block" id="about" data-aos="fade-up">
+    <h2 class="section-title">About Me</h2>
+    <div class="row">
+      <div class="col-md-3 mb-20">
+        <!-- Replace with your Base64 string or hosted image URL -->
+        <img src="data:image/jpeg;base64,PASTE_YOUR_BASE64_STRING_HERE" alt="Profile Photo" class="img-fluid rounded" />
+      </div>
+      <div class="col-md-9">
+        <p>Hello! My name is Bommala Rohith. I am a 4th year undergraduate student in the Department of Mechanical Engineering at IIT Kharagpur, enrolled in its Dual Degree Course. I am a boarder at VidyaSagar Hall of Residence and hail from Annamayya District, Andhra Pradesh. In my free time, I enjoy playing cricket, hockey, and chess.</p>
+        <p>My passion for Machine Learning, Artificial Intelligence, and deep learning has driven me to work on cutting-edge projects—from developing deep reinforcement learning strategies for dynamic pricing to designing advanced pipelines for cancer detection. This blend of hands-on technical experience and a strong academic foundation fuels my drive to innovate and solve complex challenges in the field of AI.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Internships Block -->
+  <div class="container block hidden" id="internships" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Internships</h2>
+      <span id="toggleInternshipForm" class="toggle-btn">+</span>
+    </div>
+    <!-- Internship Form -->
+    <div id="internshipFormContainer" style="display: none;">
+      <form id="internshipForm">
+        <div class="mb-3">
+          <label for="internshipTitle" class="form-label">Internship Title:</label>
+          <input type="text" id="internshipTitle" class="form-control" placeholder="Enter Internship Title" required />
+        </div>
+        <div class="mb-3">
+          <label for="internshipDuration" class="form-label">Duration:</label>
+          <input type="text" id="internshipDuration" class="form-control" placeholder="e.g., May 2024 - Jun 2024" required />
+        </div>
+        <div class="mb-3">
+          <label for="internshipDescription" class="form-label">Description:</label>
+          <textarea id="internshipDescription" class="form-control" rows="3" placeholder="Brief overview" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="keyContribution1" class="form-label">Key Contribution 1:</label>
+          <input type="text" id="keyContribution1" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyContribution2" class="form-label">Key Contribution 2:</label>
+          <input type="text" id="keyContribution2" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyContribution3" class="form-label">Key Contribution 3:</label>
+          <input type="text" id="keyContribution3" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyContribution4" class="form-label">Key Contribution 4:</label>
+          <input type="text" id="keyContribution4" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="internshipCertificate" class="form-label">Upload Certificate (PDF preferred):</label>
+          <input type="file" id="internshipCertificate" class="form-control" accept=".pdf, image/*" />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Internship</button>
+        <button type="button" id="cancelInternshipForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <!-- Internship Cards Container -->
+    <div id="internshipCardsContainer" class="mt-4"></div>
+  </div>
+
+  <!-- Projects Block -->
+  <div class="container block hidden" id="projects" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Projects</h2>
+      <span id="toggleProjectForm" class="toggle-btn">+</span>
+    </div>
+    <!-- Project Form -->
+    <div id="projectFormContainer" style="display: none;">
+      <form id="projectForm">
+        <div class="mb-3">
+          <label for="projectTitle" class="form-label">Project Title:</label>
+          <input type="text" id="projectTitle" class="form-control" placeholder="Enter Project Title" required />
+        </div>
+        <div class="mb-3">
+          <label for="projectDuration" class="form-label">Duration:</label>
+          <input type="text" id="projectDuration" class="form-control" placeholder="e.g., Jun 2024 - Jul 2024" required />
+        </div>
+        <div class="mb-3">
+          <label for="projectDescription" class="form-label">Description:</label>
+          <textarea id="projectDescription" class="form-control" rows="3" placeholder="Detailed project overview" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="keyFeature1" class="form-label">Key Feature 1:</label>
+          <input type="text" id="keyFeature1" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyFeature2" class="form-label">Key Feature 2:</label>
+          <input type="text" id="keyFeature2" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyFeature3" class="form-label">Key Feature 3:</label>
+          <input type="text" id="keyFeature3" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="keyFeature4" class="form-label">Key Feature 4:</label>
+          <input type="text" id="keyFeature4" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="projectCategory" class="form-label">Category:</label>
+          <select id="projectCategory" class="form-select" required>
+            <option value="web-development">Web Development</option>
+            <option value="research">Research</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="projectVisual" class="form-label">Upload Visual/Photo:</label>
+          <input type="file" id="projectVisual" class="form-control" accept="image/*, .pdf" />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Project</button>
+        <button type="button" id="cancelProjectForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <!-- Project Cards Container -->
+    <div id="projectCardsContainer" class="mt-4"></div>
+  </div>
+
+  <!-- Time Table Block -->
+  <div class="container block hidden" id="timetable" data-aos="fade-up">
+    <h2 class="section-title">Professional Time Table</h2>
+    
+    <div class="timetable-container">
+      <div class="calendar-header">
+        <h3 class="mb-0">My Schedule</h3>
+        <div class="calendar-toolbar">
+          <button id="prev-week"><i class="bi bi-chevron-left"></i> Previous</button>
+          <button id="today">Today</button>
+          <button id="next-week">Next <i class="bi bi-chevron-right"></i></button>
+          <button id="add-event"><i class="bi bi-plus"></i> Add Event</button>
+          <button id="sync-calendar"><i class="bi bi-arrow-repeat"></i> Sync</button>
+        </div>
+      </div>
+      
+      <div id="calendar"></div>
+    </div>
+    
+    <!-- Add Event Modal -->
+    <div class="event-modal" id="eventModal">
+      <div class="modal-content">
+        <h4 class="mb-4">Add New Event</h4>
+        <form id="eventForm">
+          <div class="mb-3">
+            <label for="eventTitle" class="form-label">Event Title</label>
+            <input type="text" class="form-control" id="eventTitle" required>
+          </div>
+          <div class="mb-3">
+            <label for="eventType" class="form-label">Event Type</label>
+            <select class="form-select" id="eventType" required>
+              <option value="event-lecture">Lecture</option>
+              <option value="event-lab">Lab</option>
+              <option value="event-meeting">Meeting</option>
+              <option value="event-personal">Personal</option>
+              <option value="event-study">Study</option>
+            </select>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="eventStart" class="form-label">Start Time</label>
+              <input type="datetime-local" class="form-control" id="eventStart" required>
+            </div>
+            <div class="col-md-6">
+              <label for="eventEnd" class="form-label">End Time</label>
+              <input type="datetime-local" class="form-control" id="eventEnd" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="eventDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="eventDescription" rows="3"></textarea>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" id="cancelEvent">Cancel</button>
+            <button type="button" class="btn btn-danger" id="deleteEvent" style="display: none;">Delete</button>
+            <button type="submit" class="btn btn-primary">Save Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Block -->
+  <div class="container block hidden" id="achievements" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Academic Achievements</h2>
+      <span id="toggleAchievementForm" class="toggle-btn">+</span>
+    </div>
+    <!-- Achievement Form -->
+    <div id="achievementFormContainer" style="display: none;">
+      <form id="achievementForm">
+        <div class="mb-3">
+          <label for="achievementText" class="form-label">Achievement:</label>
+          <input type="text" id="achievementText" class="form-control" placeholder="Enter Achievement" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Achievement</button>
+        <button type="button" id="cancelAchievementForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <!-- Achievements List -->
+    <ul id="achievementList" class="mt-4"></ul>
+  </div>
+
+  <!-- Extracurricular Block -->
+  <div class="container block hidden" id="extracurricular" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Extracurricular Activities</h2>
+      <span id="toggleExtraForm" class="toggle-btn">+</span>
+    </div>
+    <!-- Extracurricular Form -->
+    <div id="extraFormContainer" style="display: none;">
+      <form id="extraForm">
+        <div class="mb-3">
+          <label for="extraText" class="form-label">Activity:</label>
+          <input type="text" id="extraText" class="form-control" placeholder="Enter Activity" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Activity</button>
+        <button type="button" id="cancelExtraForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <!-- Extracurricular List -->
+    <ul id="extraList" class="mt-4"></ul>
+  </div>
+
+  <!-- Skills Block -->
+  <div class="container block hidden" id="skills" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Skills</h2>
+      <span id="toggleSkillForm" class="toggle-btn">+</span>
+    </div>
+    <!-- Skill Form -->
+    <div id="skillFormContainer" style="display: none;">
+      <form id="skillForm">
+        <div class="mb-3">
+          <label for="skillName" class="form-label">Skill Name:</label>
+          <input type="text" id="skillName" class="form-control" placeholder="e.g., Python" required />
+        </div>
+        <div class="mb-3">
+          <label for="skillPercentage" class="form-label">Proficiency (%):</label>
+          <input type="number" id="skillPercentage" class="form-control" placeholder="e.g., 65" min="0" max="100" required />
+        </div>
+        <!-- Dynamic input for Improvement Actions -->
+        <div class="mb-3">
+          <label class="form-label">Improvement Actions:</label>
+          <div id="improvementActionsContainer">
+            <input type="text" class="form-control improvement-action-input" placeholder="Enter an improvement action" />
+          </div>
+          <button type="button" id="addImprovementActionBtn" class="btn btn-secondary btn-sm mt-2">Add Improvement</button>
+        </div>
+        <!-- Dynamic input for Contributions -->
+        <div class="mb-3">
+          <label class="form-label">Contributions:</label>
+          <div id="contributionsContainer">
+            <input type="text" class="form-control contribution-input" placeholder="Enter a contribution" />
+          </div>
+          <button type="button" id="addContributionBtn" class="btn btn-secondary btn-sm mt-2">Add Contribution</button>
+        </div>
+        <button type="submit" class="btn btn-primary">Add Skill</button>
+        <button type="button" id="cancelSkillForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <!-- Skills List -->
+    <div id="skillList" class="mt-4"></div>
+  </div>
+
+  <!-- Vocabulary Block -->
+  <div class="container block hidden" id="vocabulary" data-aos="fade-up">
+    <div class="d-flex justify-content-between align-items-center">
+      <h2 class="section-title">Vocabulary (English - Telugu)</h2>
+      <span id="toggleVocabularyForm" class="toggle-btn">+</span>
+    </div>
+    <div id="vocabularyFormContainer" style="display: none;">
+      <form id="vocabularyForm">
+        <div class="mb-3">
+          <label for="englishWord" class="form-label">English Word:</label>
+          <input type="text" id="englishWord" class="form-control" placeholder="Enter English Word" required />
+        </div>
+        <div class="mb-3">
+          <label for="teluguWord" class="form-label">Telugu Word:</label>
+          <input type="text" id="teluguWord" class="form-control" placeholder="Enter Telugu Word" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Add Vocabulary</button>
+        <button type="button" id="cancelVocabularyForm" class="btn btn-secondary ms-2">– Cancel</button>
+      </form>
+    </div>
+    <ul id="vocabularyList" class="mt-4"></ul>
+  </div>
+
+  <!-- Contact Block -->
+  <div class="container block hidden" id="contact" data-aos="fade-up">
+    <h2 class="section-title">Contact</h2>
+    <form id="contactForm">
+      <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" id="name" class="form-control" placeholder="Your Name" />
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" id="email" class="form-control" placeholder="Your Email" />
+      </div>
+      <div class="mb-3">
+        <label for="message" class="form-label">Message:</label>
+        <textarea id="message" class="form-control" rows="4" placeholder="Your Message"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send Message</button>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="container text-center">
+    <p>&copy; 2025 Bommala Rohith. All rights reserved.</p>
+  </footer>
+
+  <!-- JavaScript Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.1/dist/aos.js"></script>
+  <!-- FullCalendar JS -->
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
+  <!-- Google API Client -->
+  <script src="https://apis.google.com/js/api.js"></script>
+  
+  <script>
+    // Initialize AOS for scroll animations
+    AOS.init({
+      duration: 800,
+      once: true
+    });
+
+    // Navigation: Show only the selected block
+    document.addEventListener("DOMContentLoaded", function() {
+      const blocks = document.querySelectorAll('.block');
+      const navLinks = document.querySelectorAll('nav a');
+      // Initially show only "about"
+      blocks.forEach(block => {
+        if (block.id !== 'about') block.classList.add('hidden');
+      });
+      navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+          blocks.forEach(block => block.classList.add('hidden'));
+          const target = this.getAttribute('data-target');
+          document.getElementById(target).classList.remove('hidden');
+        });
+      });
+    });
+
+    // Toggle forms for various sections
+    function toggleForm(toggleBtnId, formContainerId) {
+      const toggleBtn = document.getElementById(toggleBtnId);
+      const formContainer = document.getElementById(formContainerId);
+      toggleBtn.addEventListener('click', () => {
+        if (formContainer.style.display === 'none' || formContainer.style.display === '') {
+          formContainer.style.display = 'block';
+          toggleBtn.textContent = '–';
+        } else {
+          formContainer.style.display = 'none';
+          toggleBtn.textContent = '+';
+        }
+      });
+      document.getElementById('cancel' + toggleBtnId)?.addEventListener('click', () => {
+        formContainer.style.display = 'none';
+        toggleBtn.textContent = '+';
+      });
+    }
+    toggleForm('toggleInternshipForm', 'internshipFormContainer');
+    toggleForm('toggleProjectForm', 'projectFormContainer');
+    toggleForm('toggleAchievementForm', 'achievementFormContainer');
+    toggleForm('toggleExtraForm', 'extraFormContainer');
+    toggleForm('toggleSkillForm', 'skillFormContainer');
+    toggleForm('toggleVocabularyForm', 'vocabularyFormContainer');
+
+    /***********************************************
+     * Local Storage Management for all sections
+     ***********************************************/
+    let internships = [];
+    let projects = [];
+    let achievements = [];
+    let extras = [];
+    let skills = [];
+    let vocabulary = [];
+
+    // On page load, retrieve stored data.
+    window.addEventListener('DOMContentLoaded', () => {
+      const storedInternships = localStorage.getItem('internships');
+      if (storedInternships) internships = JSON.parse(storedInternships);
+      renderInternships();
+
+      const storedProjects = localStorage.getItem('projects');
+      if (storedProjects) projects = JSON.parse(storedProjects);
+      renderProjects();
+
+      const storedAchievements = localStorage.getItem('achievements');
+      if (storedAchievements) achievements = JSON.parse(storedAchievements);
+      renderAchievements();
+
+      const storedExtras = localStorage.getItem('extras');
+      if (storedExtras) extras = JSON.parse(storedExtras);
+      renderExtras();
+
+      const storedSkills = localStorage.getItem('skills');
+      if (storedSkills) skills = JSON.parse(storedSkills);
+      renderSkills();
+
+      const storedVocabulary = localStorage.getItem('vocabulary');
+      if (storedVocabulary) vocabulary = JSON.parse(storedVocabulary);
+      renderVocabulary();
+    });
+
+    /********** INTERNSHIPS **********/
+    document.getElementById('internshipForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = document.getElementById('internshipTitle').value.trim();
+      const duration = document.getElementById('internshipDuration').value.trim();
+      const description = document.getElementById('internshipDescription').value.trim();
+      const key1 = document.getElementById('keyContribution1').value.trim();
+      const key2 = document.getElementById('keyContribution2').value.trim();
+      const key3 = document.getElementById('keyContribution3').value.trim();
+      const key4 = document.getElementById('keyContribution4').value.trim();
+      const certificateInput = document.getElementById('internshipCertificate');
+      let certificateData = null;
+      let certificateFileName = '';
+      
+      try {
+        if (certificateInput.files && certificateInput.files.length > 0) {
+          const file = certificateInput.files[0];
+          certificateFileName = file.name;
+          certificateData = await readFileAsBase64(file);
+        }
+        
+        const newInternship = {
+          title,
+          duration,
+          description,
+          keyContributions: [key1, key2, key3, key4],
+          certificateFileName,
+          certificateData
+        };
+        
+        internships.push(newInternship);
+        localStorage.setItem('internships', JSON.stringify(internships));
+        this.reset();
+        renderInternships();
+        document.getElementById('internshipFormContainer').style.display = 'none';
+        document.getElementById('toggleInternshipForm').textContent = '+';
+      } catch (error) {
+        console.error('Error saving internship:', error);
+        alert('Error saving internship. Please try again.');
+      }
+    });
+
+    function renderInternships() {
+      const container = document.getElementById('internshipCardsContainer');
+      container.innerHTML = '';
+      internships.forEach((internship, index) => {
+        let keyContributionsHtml = '';
+        internship.keyContributions.forEach(item => {
+          keyContributionsHtml += `<li>${item}</li>`;
+        });
+        let certificateHtml = '';
+        if (internship.certificateFileName) {
+          if (internship.certificateData) {
+            certificateHtml = `<p><strong>Certificate:</strong> <a href="${internship.certificateData}" target="_blank">${internship.certificateFileName}</a></p>`;
+          } else {
+            certificateHtml = `<p><strong>Certificate:</strong> ${internship.certificateFileName}</p>`;
+          }
+        }
+        const cardHtml = `
+          <div class="card mb-3" data-aos="fade-up">
+            <div class="card-body">
+              <h3 class="card-title">${internship.title}</h3>
+              <p><strong>Duration:</strong> ${internship.duration}</p>
+              <p><strong>Description:</strong> ${internship.description}</p>
+              <ul>${keyContributionsHtml}</ul>
+              ${certificateHtml}
+              <button class="btn btn-danger btn-sm" onclick="removeInternship(${index})">Remove</button>
+            </div>
+          </div>
+        `;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    function removeInternship(index) {
+      internships.splice(index, 1);
+      localStorage.setItem('internships', JSON.stringify(internships));
+      renderInternships();
+    }
+
+    /********** PROJECTS **********/
+    document.getElementById('projectForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const title = document.getElementById('projectTitle').value.trim();
+      const duration = document.getElementById('projectDuration').value.trim();
+      const description = document.getElementById('projectDescription').value.trim();
+      const key1 = document.getElementById('keyFeature1').value.trim();
+      const key2 = document.getElementById('keyFeature2').value.trim();
+      const key3 = document.getElementById('keyFeature3').value.trim();
+      const key4 = document.getElementById('keyFeature4').value.trim();
+      const category = document.getElementById('projectCategory').value;
+      const visualInput = document.getElementById('projectVisual');
+      let visualData = null;
+      let visualFileName = '';
+      if (visualInput.files && visualInput.files.length > 0) {
+        const file = visualInput.files[0];
+        visualFileName = file.name;
+        if (file.type.startsWith('image/')) {
+          visualData = await readFileAsBase64(file);
+        }
+      }
+      const newProject = {
+        title,
+        duration,
+        description,
+        keyFeatures: [key1, key2, key3, key4],
+        category,
+        visualFileName,
+        visualData
+      };
+      projects.push(newProject);
+      localStorage.setItem('projects', JSON.stringify(projects));
+      this.reset();
+      renderProjects();
+    });
+
+    function renderProjects() {
+      const container = document.getElementById('projectCardsContainer');
+      container.innerHTML = '';
+      projects.forEach((project, index) => {
+        let keyFeaturesHtml = '';
+        project.keyFeatures.forEach(item => {
+          keyFeaturesHtml += `<li>${item}</li>`;
+        });
+        let visualHtml = '';
+        if (project.visualFileName) {
+          if (project.visualData) {
+            visualHtml = `<p><strong>Visual:</strong> <a href="${project.visualData}" target="_blank">${project.visualFileName}</a></p>`;
+          } else {
+            visualHtml = `<p><strong>Visual:</strong> ${project.visualFileName}</p>`;
+          }
+        }
+        const cardHtml = `
+          <div class="card mb-3" data-aos="fade-up">
+            <div class="card-body">
+              <h3 class="card-title">${project.title}</h3>
+              <p><strong>Duration:</strong> ${project.duration}</p>
+              <p><strong>Description:</strong> ${project.description}</p>
+              <ul>${keyFeaturesHtml}</ul>
+              <p><strong>Category:</strong> ${project.category}</p>
+              ${visualHtml}
+              <button class="btn btn-danger btn-sm" onclick="removeProject(${index})">Remove</button>
+            </div>
+          </div>
+        `;
+        container.innerHTML += cardHtml;
+      });
+    }
+
+    function removeProject(index) {
+      projects.splice(index, 1);
+      localStorage.setItem('projects', JSON.stringify(projects));
+      renderProjects();
+    }
+
+    /********** ACHIEVEMENTS **********/
+    document.getElementById('achievementForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const achievement = document.getElementById('achievementText').value.trim();
+      achievements.push(achievement);
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+      this.reset();
+      renderAchievements();
+    });
+
+    function renderAchievements() {
+      const list = document.getElementById('achievementList');
+      list.innerHTML = '';
+      achievements.forEach((ach, index) => {
+        list.innerHTML += `<li data-aos="fade-up">${ach} <button class="btn btn-danger btn-sm" onclick="removeAchievement(${index})">Remove</button></li>`;
+      });
+    }
+
+    function removeAchievement(index) {
+      achievements.splice(index, 1);
+      localStorage.setItem('achievements', JSON.stringify(achievements));
+      renderAchievements();
+    }
+
+    /********** EXTRACURRICULAR **********/
+    document.getElementById('extraForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const activity = document.getElementById('extraText').value.trim();
+      extras.push(activity);
+      localStorage.setItem('extras', JSON.stringify(extras));
+      this.reset();
+      renderExtras();
+    });
+
+    function renderExtras() {
+      const list = document.getElementById('extraList');
+      list.innerHTML = '';
+      extras.forEach((activity, index) => {
+        list.innerHTML += `<li data-aos="fade-up">${activity} <button class="btn btn-danger btn-sm" onclick="removeExtra(${index})">Remove</button></li>`;
+      });
+    }
+
+    function removeExtra(index) {
+      extras.splice(index, 1);
+      localStorage.setItem('extras', JSON.stringify(extras));
+      renderExtras();
+    }
+
+    /********** SKILLS **********/
+    // Add dynamic improvement and contribution input fields
+    document.getElementById('addImprovementActionBtn').addEventListener('click', function() {
+      const container = document.getElementById('improvementActionsContainer');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-control improvement-action-input mt-2';
+      input.placeholder = 'Enter an improvement action';
+      container.appendChild(input);
+    });
+    document.getElementById('addContributionBtn').addEventListener('click', function() {
+      const container = document.getElementById('contributionsContainer');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'form-control contribution-input mt-2';
+      input.placeholder = 'Enter a contribution';
+      container.appendChild(input);
+    });
+
+    document.getElementById('skillForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const skillName = document.getElementById('skillName').value.trim();
+      const percentage = document.getElementById('skillPercentage').value.trim();
+      // Gather all improvement actions
+      const improvementInputs = document.querySelectorAll('.improvement-action-input');
+      const improvements = [];
+      improvementInputs.forEach(input => {
+        if (input.value.trim() !== '') improvements.push(input.value.trim());
+      });
+      // Gather all contributions
+      const contributionInputs = document.querySelectorAll('.contribution-input');
+      const contributions = [];
+      contributionInputs.forEach(input => {
+        if (input.value.trim() !== '') contributions.push(input.value.trim());
+      });
+      skills.push({ skill: skillName, percentage, improvements, contributions });
+      localStorage.setItem('skills', JSON.stringify(skills));
+      this.reset();
+      // Reset dynamic fields
+      document.getElementById('improvementActionsContainer').innerHTML = '<input type="text" class="form-control improvement-action-input" placeholder="Enter an improvement action" />';
+      document.getElementById('contributionsContainer').innerHTML = '<input type="text" class="form-control contribution-input" placeholder="Enter a contribution" />';
+      renderSkills();
+    });
+
+    function renderSkills() {
+      const container = document.getElementById('skillList');
+      container.innerHTML = '';
+      skills.forEach((item, index) => {
+        let improvementsHtml = '';
+        if (item.improvements && item.improvements.length) {
+          improvementsHtml = item.improvements.map((act, i) => `
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="improve${index}-${i}">
+              <label class="form-check-label" for="improve${index}-${i}">${act}</label>
+            </div>
+          `).join('');
+        } else {
+          improvementsHtml = 'No improvement actions added.';
+        }
+        let contributionsHtml = '';
+        if (item.contributions && item.contributions.length) {
+          contributionsHtml = `<ul class="contributions-list">` + item.contributions.map(contrib => `<li>${contrib}</li>`).join('') + `</ul>`;
+        } else {
+          contributionsHtml = 'No contributions added.';
+        }
+        const skillHtml = `
+          <div class="skill-item border p-3 mb-3" data-index="${index}">
+            <div class="d-flex justify-content-between align-items-center">
+              <h3 class="skill-title">
+                <span class="skill-name">${item.skill}</span> (<span class="skill-percentage">${item.percentage}</span>%)
+              </h3>
+              <button class="btn btn-sm btn-outline-secondary edit-skill">Edit</button>
+            </div>
+            <div class="skill-details row mt-3">
+              <div class="col-md-6">
+                <h5>Improvement Actions</h5>
+                ${improvementsHtml}
+              </div>
+              <div class="col-md-6">
+                <h5>Contributions</h5>
+                ${contributionsHtml}
+              </div>
+            </div>
+          </div>
+        `;
+        container.innerHTML += skillHtml;
+      });
+    }
+
+    // Delegate click events for editing skills
+    document.getElementById('skillList').addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('edit-skill')) {
+        const skillItem = e.target.closest('.skill-item');
+        const index = skillItem.getAttribute('data-index');
+        const currentSkill = skills[index];
+        // Replace the header with an edit form
+        skillItem.innerHTML = `
+          <div class="edit-skill-form">
+            <input type="text" class="edit-skill-name form-control mb-2" value="${currentSkill.skill}" />
+            (<input type="number" class="edit-skill-percentage form-control d-inline-block" value="${currentSkill.percentage}" style="width: 25%;" />%)
+            <br>
+            <label class="mt-2">Improvements:</label>
+            <textarea class="edit-improvements form-control mb-2" rows="3">${currentSkill.improvements.join('\n')}</textarea>
+            <label>Contributions:</label>
+            <textarea class="edit-contributions form-control mb-2" rows="3">${currentSkill.contributions.join('\n')}</textarea>
+            <button class="btn btn-sm btn-primary save-skill">Save</button>
+            <button class="btn btn-sm btn-secondary cancel-edit">Cancel</button>
+          </div>
+        `;
+      } else if (e.target && e.target.classList.contains('save-skill')) {
+        const skillItem = e.target.closest('.skill-item');
+        const index = skillItem.getAttribute('data-index');
+        const newName = skillItem.querySelector('.edit-skill-name').value.trim();
+        const newPercentage = skillItem.querySelector('.edit-skill-percentage').value.trim();
+        const newImprovements = skillItem.querySelector('.edit-improvements').value.split('\n').map(i => i.trim()).filter(i => i !== '');
+        const newContributions = skillItem.querySelector('.edit-contributions').value.split('\n').map(c => c.trim()).filter(c => c !== '');
+        skills[index] = { skill: newName, percentage: newPercentage, improvements: newImprovements, contributions: newContributions };
+        localStorage.setItem('skills', JSON.stringify(skills));
+        renderSkills();
+      } else if (e.target && e.target.classList.contains('cancel-edit')) {
+        renderSkills();
+      }
+    });
+
+    function removeSkill(index) {
+      skills.splice(index, 1);
+      localStorage.setItem('skills', JSON.stringify(skills));
+      renderSkills();
+    }
+
+    /********** VOCABULARY **********/
+    document.getElementById('vocabularyForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const english = document.getElementById('englishWord').value.trim();
+      const telugu = document.getElementById('teluguWord').value.trim();
+      vocabulary.push({ english, telugu });
+      localStorage.setItem('vocabulary', JSON.stringify(vocabulary));
+      this.reset();
+      renderVocabulary();
+    });
+
+    function renderVocabulary() {
+      const list = document.getElementById('vocabularyList');
+      list.innerHTML = '';
+      vocabulary.forEach((item, index) => {
+        list.innerHTML += `<li data-aos="fade-up">${item.english} - ${item.telugu} <button class="btn btn-danger btn-sm" onclick="removeVocabulary(${index})">Remove</button></li>`;
+      });
+    }
+
+    function removeVocabulary(index) {
+      vocabulary.splice(index, 1);
+      localStorage.setItem('vocabulary', JSON.stringify(vocabulary));
+      renderVocabulary();
+    }
+
+    // Utility: Read file as Base64
+    function readFileAsBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    /***********************************************
+     * Advanced Time Table Implementation
+     ***********************************************/
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize calendar
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        headerToolbar: false,
+        allDaySlot: false,
+        slotMinTime: '07:00:00',
+        slotMaxTime: '22:00:00',
+        nowIndicator: true,
+        navLinks: true,
+        editable: true,
+        selectable: true,
+        eventClick: function(info) {
+          info.jsEvent.preventDefault();
+          openEventModal(info.event);
+        },
+        eventDrop: function(info) {
+          updateEventInStorage(info.event);
+        },
+        eventResize: function(info) {
+          updateEventInStorage(info.event);
+        },
+        events: loadEventsFromStorage(),
+        locale: 'en-in', // India locale
+        timeZone: 'Asia/Kolkata', // Indian timezone
+        firstDay: 1, // Start week on Monday
+        slotLabelFormat: {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+          meridiem: 'short'
+        }
+      });
+      
+      calendar.render();
+      
+      // Calendar navigation controls
+      document.getElementById('prev-week').addEventListener('click', function() {
+        calendar.prev();
+      });
+      
+      document.getElementById('next-week').addEventListener('click', function() {
+        calendar.next();
+      });
+      
+      document.getElementById('today').addEventListener('click', function() {
+        calendar.today();
+      });
+      
+      // Add event button
+      document.getElementById('add-event').addEventListener('click', function() {
+        openEventModal();
+      });
+      
+      // Sync with Google Calendar
+      document.getElementById('sync-calendar').addEventListener('click', function() {
+        syncWithGoogleCalendar();
+      });
+      
+      // Event modal handling
+      const eventModal = document.getElementById('eventModal');
+      const eventForm = document.getElementById('eventForm');
+      const cancelEventBtn = document.getElementById('cancelEvent');
+      const deleteEventBtn = document.getElementById('deleteEvent');
+      
+      function openEventModal(event = null) {
+        const modal = eventModal;
+        const form = eventForm;
+        
+        if (event) {
+          // Editing existing event
+          document.getElementById('eventTitle').value = event.title;
+          document.getElementById('eventType').value = event.classNames[0] || 'event-lecture';
+          document.getElementById('eventStart').value = formatDateTimeForInput(event.start);
+          document.getElementById('eventEnd').value = formatDateTimeForInput(event.end);
+          document.getElementById('eventDescription').value = event.extendedProps.description || '';
+          
+          form.dataset.eventId = event.id;
+          deleteEventBtn.style.display = 'block';
+        } else {
+          // Adding new event
+          form.reset();
+          delete form.dataset.eventId;
+          deleteEventBtn.style.display = 'none';
+          
+          // Set default times (next hour)
+          const now = new Date();
+          const nextHour = new Date(now.getTime() + 60 * 60 * 1000);
+          
+          document.getElementById('eventStart').value = formatDateTimeForInput(now);
+          document.getElementById('eventEnd').value = formatDateTimeForInput(nextHour);
+        }
+        
+        modal.classList.add('show');
+      }
+      
+      function closeEventModal() {
+        eventModal.classList.remove('show');
+      }
+      
+      cancelEventBtn.addEventListener('click', closeEventModal);
+      
+      deleteEventBtn.addEventListener('click', function() {
+        if (eventForm.dataset.eventId) {
+          deleteEvent(eventForm.dataset.eventId);
+          closeEventModal();
+        }
+      });
+      
+      eventForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = {
+          title: document.getElementById('eventTitle').value,
+          type: document.getElementById('eventType').value,
+          start: document.getElementById('eventStart').value,
+          end: document.getElementById('eventEnd').value,
+          description: document.getElementById('eventDescription').value
+        };
+        
+        if (this.dataset.eventId) {
+          // Update existing event
+          updateEvent(this.dataset.eventId, formData);
+        } else {
+          // Add new event
+          addEvent(formData);
+        }
+        
+        closeEventModal();
+      });
+      
+      // Event management functions
+      function addEvent(eventData) {
+        const event = {
+          id: generateEventId(),
+          title: eventData.title,
+          start: eventData.start,
+          end: eventData.end,
+          className: eventData.type,
+          extendedProps: {
+            description: eventData.description
+          }
+        };
+        
+        calendar.addEvent(event);
+        saveEventToStorage(event);
+      }
+      
+      function updateEvent(eventId, eventData) {
+        const event = calendar.getEventById(eventId);
+        
+        if (event) {
+          event.setProp('title', eventData.title);
+          event.setStart(eventData.start);
+          event.setEnd(eventData.end);
+          event.setProp('className', eventData.type);
+          event.setExtendedProp('description', eventData.description);
+          
+          updateEventInStorage(event);
+        }
+      }
+      
+      function deleteEvent(eventId) {
+        const event = calendar.getEventById(eventId);
+        if (event) {
+          event.remove();
+          removeEventFromStorage(eventId);
+        }
+      }
+      
+      function generateEventId() {
+        return 'event_' + Math.random().toString(36).substr(2, 9);
+      }
+      
+      function formatDateTimeForInput(date) {
+        if (!date) return '';
+        
+        const d = new Date(date);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        return d.toISOString().slice(0, 16);
+      }
+      
+      // Local storage management
+      function saveEventToStorage(event) {
+        let events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+        
+        // Remove if exists
+        const existingIndex = events.findIndex(e => e.id === event.id);
+        if (existingIndex >= 0) {
+          events.splice(existingIndex, 1);
+        }
+        
+        // Add/update event
+        events.push({
+          id: event.id,
+          title: event.title,
+          start: event.start.toISOString(),
+          end: event.end ? event.end.toISOString() : null,
+          className: event.classNames[0],
+          description: event.extendedProps.description
+        });
+        
+        localStorage.setItem('calendarEvents', JSON.stringify(events));
+      }
+      
+      function updateEventInStorage(event) {
+        saveEventToStorage(event);
+      }
+      
+      function removeEventFromStorage(eventId) {
+        let events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+        events = events.filter(e => e.id !== eventId);
+        localStorage.setItem('calendarEvents', JSON.stringify(events));
+      }
+      
+      function loadEventsFromStorage() {
+        const events = JSON.parse(localStorage.getItem('calendarEvents')) || [];
+        return events.map(event => ({
+          id: event.id,
+          title: event.title,
+          start: event.start,
+          end: event.end,
+          className: event.className,
+          extendedProps: {
+            description: event.description
+          }
+        }));
+      }
+      
+      // Google Calendar integration
+      const CLIENT_ID = 'Y897980954845-tfnlliqgd5551m1h296do05fbbm0jvhh.apps.googleusercontent.com';
+      const API_KEY = 'AIzaSyCjX3E6C4Hw8BqgTJ8jW1qZMGPtt0P1JBA';
+      const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
+      const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+      
+      let tokenClient;
+      let gapiInited = false;
+      let gisInited = false;
+      
+      function gapiLoaded() {
+        gapi.load('client', initializeGapiClient);
+      }
+      
+      async function initializeGapiClient() {
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: [DISCOVERY_DOC],
+        });
+        gapiInited = true;
+        maybeEnableButtons();
+      }
+      
+      function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: '', // defined later
+        });
+        gisInited = true;
+        maybeEnableButtons();
+      }
+      
+      function maybeEnableButtons() {
+        if (gapiInited && gisInited) {
+          document.getElementById('sync-calendar').style.display = 'block';
+        }
+      }
+      
+      async function syncWithGoogleCalendar() {
+        try {
+          tokenClient.callback = async (resp) => {
+            if (resp.error !== undefined) {
+              throw resp;
+            }
+            
+            // Fetch events from Google Calendar
+            const response = await gapi.client.calendar.events.list({
+              'calendarId': 'primary',
+              'timeMin': (new Date()).toISOString(),
+              'showDeleted': false,
+              'singleEvents': true,
+              'maxResults': 100,
+              'orderBy': 'startTime'
+            });
+            
+            const events = response.result.items;
+            
+            // Merge with local events
+            const localEvents = loadEventsFromStorage();
+            const mergedEvents = [...localEvents];
+            
+            events.forEach(gEvent => {
+              // Check if event already exists
+              const exists = mergedEvents.some(e => e.id === gEvent.id);
+              
+              if (!exists) {
+                mergedEvents.push({
+                  id: gEvent.id,
+                  title: gEvent.summary,
+                  start: gEvent.start.dateTime || gEvent.start.date,
+                  end: gEvent.end.dateTime || gEvent.end.date,
+                  className: getEventClass(gEvent),
+                  extendedProps: {
+                    description: gEvent.description || ''
+                  }
+                });
+              }
+            });
+            
+            // Save merged events
+            localStorage.setItem('calendarEvents', JSON.stringify(mergedEvents));
+            
+            // Refresh calendar
+            calendar.refetchEvents();
+            
+            alert(`Successfully synced ${events.length} events from Google Calendar`);
+          };
+          
+          if (gapi.client.getToken() === null) {
+            tokenClient.requestAccessToken({prompt: 'consent'});
+          } else {
+            tokenClient.requestAccessToken({prompt: ''});
+          }
+        } catch (error) {
+          console.error('Error syncing with Google Calendar:', error);
+          alert('Error syncing with Google Calendar. Please try again.');
+        }
+      }
+      
+      function getEventClass(gEvent) {
+        // Map Google Calendar event colors to our classes
+        const colorMap = {
+          '1': 'event-lecture',
+          '2': 'event-study',
+          '3': 'event-meeting',
+          '4': 'event-lab',
+          '5': 'event-personal',
+          '6': 'event-lecture',
+          '7': 'event-study',
+          '8': 'event-meeting',
+          '9': 'event-lab',
+          '10': 'event-personal',
+          '11': 'event-lecture'
+        };
+        
+        return colorMap[gEvent.colorId] || 'event-lecture';
+      }
+      
+      // Load Google API libraries
+      function loadGoogleAPIs() {
+        const gapiScript = document.createElement('script');
+        gapiScript.src = 'https://apis.google.com/js/api.js';
+        gapiScript.onload = gapiLoaded;
+        gapiScript.async = true;
+        gapiScript.defer = true;
+        document.head.appendChild(gapiScript);
+        
+        const gisScript = document.createElement('script');
+        gisScript.src = 'https://accounts.google.com/gsi/client';
+        gisScript.onload = gisLoaded;
+        gisScript.async = true;
+        gisScript.defer = true;
+        document.head.appendChild(gisScript);
+      }
+      
+      // Initialize Google APIs when timetable section is shown
+      const timetableLink = document.querySelector('a[data-target="timetable"]');
+      timetableLink.addEventListener('click', loadGoogleAPIs);
+      
+      // Make functions available globally for button clicks
+      window.removeInternship = removeInternship;
+      window.removeProject = removeProject;
+      window.removeAchievement = removeAchievement;
+      window.removeExtra = removeExtra;
+      window.removeSkill = removeSkill;
+      window.removeVocabulary = removeVocabulary;
+    });
+  </script>
+</body>
+</html>
